@@ -1,5 +1,33 @@
 const GEMINI_MODEL = 'gemini-3.1-flash-lite';
 
+async function saveDraw({ birthDate, birthTime, gender, main, bonus, message }) {
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !serviceKey) return;
+
+  try {
+    await fetch(`${supabaseUrl}/rest/v1/saju_draws`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: serviceKey,
+        Authorization: `Bearer ${serviceKey}`,
+        Prefer: 'return=minimal'
+      },
+      body: JSON.stringify({
+        birth_date: birthDate,
+        birth_time: birthTime || null,
+        gender: gender || null,
+        main_numbers: main,
+        bonus_number: bonus,
+        message
+      })
+    });
+  } catch (err) {
+    console.error('saveDraw failed:', err.message);
+  }
+}
+
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'POST 요청만 지원합니다.' });
@@ -106,11 +134,12 @@ module.exports = async (req, res) => {
       return;
     }
 
-    res.status(200).json({
-      main: [...main].sort((a, b) => a - b),
-      bonus,
-      message: typeof parsed.message === 'string' ? parsed.message : ''
-    });
+    const sortedMain = [...main].sort((a, b) => a - b);
+    const finalMessage = typeof parsed.message === 'string' ? parsed.message : '';
+
+    await saveDraw({ birthDate, birthTime, gender, main: sortedMain, bonus, message: finalMessage });
+
+    res.status(200).json({ main: sortedMain, bonus, message: finalMessage });
   } catch (err) {
     res.status(500).json({ error: `서버 오류: ${err.message}` });
   }
