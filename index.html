@@ -1,548 +1,672 @@
 <!doctype html>
 <html lang="ko">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>로또 번호 추첨기</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css" />
-<style>
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    padding: 48px 20px;
-    background: #f6f5f4;
-    font-family: "Notion Sans", Inter, -apple-system, system-ui, "Segoe UI", Helvetica, sans-serif;
-    color: #1a1a1a;
-  }
-  .sr-only {
-    position: absolute;
-    width: 1px; height: 1px;
-    padding: 0; margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-  }
-  .page {
-    max-width: 560px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 32px;
-  }
-  .card {
-    background: #ffffff;
-    border: 1px solid #e5e3df;
-    border-radius: 12px;
-    padding: 24px;
-  }
-  .card h2 {
-    font-size: 20px;
-    font-weight: 600;
-    margin: 0 0 4px;
-  }
-  .card .subtitle {
-    font-size: 13px;
-    color: #787671;
-    margin: 0 0 20px;
-  }
-</style>
-</head>
-<body>
-<div class="page">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>로또 번호 추첨기</title>
 
-<div class="card">
-<h2>로또 번호 추첨기</h2>
-<p class="subtitle">최근 100회 실제 당첨번호 출현 빈도를 반영한 가중치 추첨</p>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css"
+    />
+    <!-- Google tag (gtag.js) -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-KQGSMQJGVP"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
 
-<h3 class="sr-only">1부터 45까지 숫자 중 6개를 무작위로 뽑고, 본번호와 겹치지 않는 보너스 번호 1개를 추첨하는 로또 번호 추첨기</h3>
+      gtag("config", "G-KQGSMQJGVP");
+    </script>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 48px 20px;
+        background: #f6f5f4;
+        font-family:
+          "Notion Sans",
+          Inter,
+          -apple-system,
+          system-ui,
+          "Segoe UI",
+          Helvetica,
+          sans-serif;
+        color: #1a1a1a;
+      }
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+      .page {
+        max-width: 560px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+      }
+      .card {
+        background: #ffffff;
+        border: 1px solid #e5e3df;
+        border-radius: 12px;
+        padding: 24px;
+      }
+      .card h2 {
+        font-size: 20px;
+        font-weight: 600;
+        margin: 0 0 4px;
+      }
+      .card .subtitle {
+        font-size: 13px;
+        color: #787671;
+        margin: 0 0 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="card">
+        <h2>로또 번호 추첨기</h2>
+        <p class="subtitle">
+          최근 100회 실제 당첨번호 출현 빈도를 반영한 가중치 추첨
+        </p>
 
-<style>
-#lotto-machine {
-  font-family: inherit;
-}
-#lotto-machine button {
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.3;
-  padding: 10px 18px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 150ms ease, border-color 150ms ease, opacity 150ms ease;
-}
-#lotto-machine button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-#lotto-machine #draw-btn {
-  background: #5645d4;
-  color: #ffffff;
-  border: none;
-}
-#lotto-machine #draw-btn:hover:not(:disabled) {
-  background: #4534b3;
-}
-#lotto-machine #draw-btn.drawing {
-  animation: lotto-pulse 0.6s ease-in-out infinite;
-}
-#lotto-machine #clear-btn {
-  background: transparent;
-  color: #1a1a1a;
-  border: 1px solid #c8c4be;
-}
-#lotto-machine #clear-btn:hover:not(:disabled) {
-  background: #f6f5f4;
-}
-#lotto-machine .lotto-ball {
-  width: var(--ball-size);
-  height: var(--ball-size);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  flex-shrink: 0;
-  background: #f0eeec;
-  color: #a4a097;
-  transform: scale(0);
-  transition: transform 360ms cubic-bezier(.34, 1.56, .64, 1), box-shadow 200ms ease;
-}
-#lotto-machine .lotto-ball.settled {
-  transform: scale(1);
-}
-#lotto-machine .lotto-ball.rolling {
-  animation: lotto-spin 0.09s linear infinite;
-}
-#lotto-machine .lotto-ball.bonus-ball {
-  box-shadow: 0 0 0 3px #ffffff, 0 0 0 5px #5645d4;
-}
-#lotto-machine .lotto-plus {
-  font-size: 20px;
-  font-weight: 700;
-  color: #a4a097;
-  align-self: center;
-  display: flex;
-  align-items: center;
-}
-#lotto-machine .history-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border: 1px solid #e5e3df;
-  border-radius: 12px;
-  padding: 8px 12px;
-  background: #ffffff;
-}
-#lotto-machine .history-label {
-  font-size: 13px;
-  color: #787671;
-  min-width: 44px;
-}
-#lotto-machine .history-balls {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
+        <h3 class="sr-only">
+          1부터 45까지 숫자 중 6개를 무작위로 뽑고, 본번호와 겹치지 않는 보너스
+          번호 1개를 추첨하는 로또 번호 추첨기
+        </h3>
 
-@keyframes lotto-spin {
-  0% { transform: scale(1) rotate(0deg); }
-  50% { transform: scale(1.06) rotate(180deg); }
-  100% { transform: scale(1) rotate(360deg); }
-}
-@keyframes lotto-pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.04); }
-}
-</style>
+        <style>
+          #lotto-machine {
+            font-family: inherit;
+          }
+          #lotto-machine button {
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 1.3;
+            padding: 10px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition:
+              background-color 150ms ease,
+              border-color 150ms ease,
+              opacity 150ms ease;
+          }
+          #lotto-machine button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+          }
+          #lotto-machine #draw-btn {
+            background: #5645d4;
+            color: #ffffff;
+            border: none;
+          }
+          #lotto-machine #draw-btn:hover:not(:disabled) {
+            background: #4534b3;
+          }
+          #lotto-machine #draw-btn.drawing {
+            animation: lotto-pulse 0.6s ease-in-out infinite;
+          }
+          #lotto-machine #clear-btn {
+            background: transparent;
+            color: #1a1a1a;
+            border: 1px solid #c8c4be;
+          }
+          #lotto-machine #clear-btn:hover:not(:disabled) {
+            background: #f6f5f4;
+          }
+          #lotto-machine .lotto-ball {
+            width: var(--ball-size);
+            height: var(--ball-size);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
+            background: #f0eeec;
+            color: #a4a097;
+            transform: scale(0);
+            transition:
+              transform 360ms cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 200ms ease;
+          }
+          #lotto-machine .lotto-ball.settled {
+            transform: scale(1);
+          }
+          #lotto-machine .lotto-ball.rolling {
+            animation: lotto-spin 0.09s linear infinite;
+          }
+          #lotto-machine .lotto-ball.bonus-ball {
+            box-shadow:
+              0 0 0 3px #ffffff,
+              0 0 0 5px #5645d4;
+          }
+          #lotto-machine .lotto-plus {
+            font-size: 20px;
+            font-weight: 700;
+            color: #a4a097;
+            align-self: center;
+            display: flex;
+            align-items: center;
+          }
+          #lotto-machine .history-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid #e5e3df;
+            border-radius: 12px;
+            padding: 8px 12px;
+            background: #ffffff;
+          }
+          #lotto-machine .history-label {
+            font-size: 13px;
+            color: #787671;
+            min-width: 44px;
+          }
+          #lotto-machine .history-balls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+          }
 
-<div id="lotto-machine">
-<div style="display:flex; justify-content:center; align-items:center; gap:10px; flex-wrap:wrap; min-height:60px; margin:0 0 1.5rem;" id="balls"></div>
+          @keyframes lotto-spin {
+            0% {
+              transform: scale(1) rotate(0deg);
+            }
+            50% {
+              transform: scale(1.06) rotate(180deg);
+            }
+            100% {
+              transform: scale(1) rotate(360deg);
+            }
+          }
+          @keyframes lotto-pulse {
+            0%,
+            100% {
+              transform: scale(1);
+            }
+            50% {
+              transform: scale(1.04);
+            }
+          }
+        </style>
 
-<div style="display:flex; justify-content:center; gap:12px; margin-bottom:1.5rem;">
-  <button id="draw-btn"><i class="ti ti-ball-basketball" style="font-size:16px; vertical-align:-3px; margin-right:6px;" aria-hidden="true"></i>번호 추첨</button>
-  <button id="clear-btn">기록 지우기</button>
-</div>
+        <div id="lotto-machine">
+          <div
+            style="
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              gap: 10px;
+              flex-wrap: wrap;
+              min-height: 60px;
+              margin: 0 0 1.5rem;
+            "
+            id="balls"
+          ></div>
 
-<div id="history" style="display:flex; flex-direction:column; gap:8px; max-width:480px; margin:0 auto;"></div>
-</div>
-</div>
+          <div
+            style="
+              display: flex;
+              justify-content: center;
+              gap: 12px;
+              margin-bottom: 1.5rem;
+            "
+          >
+            <button id="draw-btn">
+              <i
+                class="ti ti-ball-basketball"
+                style="font-size: 16px; vertical-align: -3px; margin-right: 6px"
+                aria-hidden="true"
+              ></i
+              >번호 추첨
+            </button>
+            <button id="clear-btn">기록 지우기</button>
+          </div>
 
-<div class="card">
-<h2><i class="ti ti-sparkles" style="font-size:18px; vertical-align:-2px; margin-right:4px;" aria-hidden="true"></i>사주 기반 AI 번호 추천</h2>
-<p class="subtitle">생년월일(과 태어난 시간)을 입력하면 AI가 사주 풀이와 함께 번호를 추천해드려요</p>
+          <div
+            id="history"
+            style="
+              display: flex;
+              flex-direction: column;
+              gap: 8px;
+              max-width: 480px;
+              margin: 0 auto;
+            "
+          ></div>
+        </div>
+      </div>
 
-<style>
-#saju-form {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  font-family: inherit;
-}
-#saju-form label {
-  display: block;
-  font-size: 13px;
-  font-weight: 500;
-  color: #37352f;
-  margin-bottom: 6px;
-}
-#saju-form input[type="date"],
-#saju-form input[type="time"],
-#saju-form select {
-  width: 100%;
-  height: 44px;
-  padding: 0 12px;
-  font-size: 14px;
-  font-family: inherit;
-  color: #1a1a1a;
-  background: #ffffff;
-  border: 1px solid #c8c4be;
-  border-radius: 8px;
-}
-#saju-form input:disabled {
-  background: #f6f5f4;
-  color: #a4a097;
-}
-#saju-form input:focus,
-#saju-form select:focus {
-  outline: none;
-  border: 2px solid #5645d4;
-}
-.field-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.checkbox-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: #787671;
-}
-.checkbox-row input {
-  width: 14px;
-  height: 14px;
-}
-#saju-submit {
-  margin-top: 6px;
-  background: #5645d4;
-  color: #ffffff;
-  border: none;
-  border-radius: 8px;
-  padding: 12px 18px;
-  font-size: 14px;
-  font-weight: 500;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background-color 150ms ease, opacity 150ms ease;
-}
-#saju-submit:hover:not(:disabled) {
-  background: #4534b3;
-}
-#saju-submit:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-#saju-result {
-  margin-top: 18px;
-  display: none;
-  flex-direction: column;
-  gap: 12px;
-}
-#saju-result.visible {
-  display: flex;
-}
-#saju-result-balls {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-#saju-result-message {
-  font-size: 14px;
-  line-height: 1.6;
-  color: #37352f;
-  background: #f6f5f4;
-  border-radius: 8px;
-  padding: 14px 16px;
-}
-#saju-error {
-  display: none;
-  font-size: 13px;
-  color: #e03131;
-  margin-top: 12px;
-}
-#saju-error.visible {
-  display: block;
-}
-</style>
+      <div class="card">
+        <h2>
+          <i
+            class="ti ti-sparkles"
+            style="font-size: 18px; vertical-align: -2px; margin-right: 4px"
+            aria-hidden="true"
+          ></i
+          >사주 기반 AI 번호 추천
+        </h2>
+        <p class="subtitle">
+          생년월일(과 태어난 시간)을 입력하면 AI가 사주 풀이와 함께 번호를
+          추천해드려요
+        </p>
 
-<form id="saju-form">
-  <div>
-    <label for="saju-birthdate">생년월일 <span aria-hidden="true">*</span></label>
-    <input type="date" id="saju-birthdate" name="birthdate" required />
-  </div>
+        <style>
+          #saju-form {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            font-family: inherit;
+          }
+          #saju-form label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #37352f;
+            margin-bottom: 6px;
+          }
+          #saju-form input[type="date"],
+          #saju-form input[type="time"],
+          #saju-form select {
+            width: 100%;
+            height: 44px;
+            padding: 0 12px;
+            font-size: 14px;
+            font-family: inherit;
+            color: #1a1a1a;
+            background: #ffffff;
+            border: 1px solid #c8c4be;
+            border-radius: 8px;
+          }
+          #saju-form input:disabled {
+            background: #f6f5f4;
+            color: #a4a097;
+          }
+          #saju-form input:focus,
+          #saju-form select:focus {
+            outline: none;
+            border: 2px solid #5645d4;
+          }
+          .field-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+          }
+          .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #787671;
+          }
+          .checkbox-row input {
+            width: 14px;
+            height: 14px;
+          }
+          #saju-submit {
+            margin-top: 6px;
+            background: #5645d4;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 18px;
+            font-size: 14px;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            transition:
+              background-color 150ms ease,
+              opacity 150ms ease;
+          }
+          #saju-submit:hover:not(:disabled) {
+            background: #4534b3;
+          }
+          #saju-submit:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+          }
+          #saju-result {
+            margin-top: 18px;
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+          }
+          #saju-result.visible {
+            display: flex;
+          }
+          #saju-result-balls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+          }
+          #saju-result-message {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #37352f;
+            background: #f6f5f4;
+            border-radius: 8px;
+            padding: 14px 16px;
+          }
+          #saju-error {
+            display: none;
+            font-size: 13px;
+            color: #e03131;
+            margin-top: 12px;
+          }
+          #saju-error.visible {
+            display: block;
+          }
+        </style>
 
-  <div>
-    <div class="field-row">
-      <label for="saju-birthtime" style="margin-bottom:0;">태어난 시간 (선택)</label>
-      <span class="checkbox-row">
-        <input type="checkbox" id="saju-time-unknown" />
-        <label for="saju-time-unknown" style="margin-bottom:0; font-weight:400;">모름</label>
-      </span>
+        <form id="saju-form">
+          <div>
+            <label for="saju-birthdate"
+              >생년월일 <span aria-hidden="true">*</span></label
+            >
+            <input type="date" id="saju-birthdate" name="birthdate" required />
+          </div>
+
+          <div>
+            <div class="field-row">
+              <label for="saju-birthtime" style="margin-bottom: 0"
+                >태어난 시간 (선택)</label
+              >
+              <span class="checkbox-row">
+                <input type="checkbox" id="saju-time-unknown" />
+                <label
+                  for="saju-time-unknown"
+                  style="margin-bottom: 0; font-weight: 400"
+                  >모름</label
+                >
+              </span>
+            </div>
+            <input
+              type="time"
+              id="saju-birthtime"
+              name="birthtime"
+              style="margin-top: 6px"
+            />
+          </div>
+
+          <div>
+            <label for="saju-gender">성별</label>
+            <select id="saju-gender" name="gender">
+              <option value="unknown">선택 안 함</option>
+              <option value="male">남성</option>
+              <option value="female">여성</option>
+            </select>
+          </div>
+
+          <button type="submit" id="saju-submit">
+            <i
+              class="ti ti-wand"
+              style="font-size: 16px; vertical-align: -3px; margin-right: 6px"
+              aria-hidden="true"
+            ></i
+            >사주로 번호 추천받기
+          </button>
+        </form>
+
+        <div id="saju-error" role="alert"></div>
+
+        <div id="saju-result">
+          <div id="saju-result-balls"></div>
+          <p id="saju-result-message"></p>
+        </div>
+      </div>
     </div>
-    <input type="time" id="saju-birthtime" name="birthtime" style="margin-top:6px;" />
-  </div>
 
-  <div>
-    <label for="saju-gender">성별</label>
-    <select id="saju-gender" name="gender">
-      <option value="unknown">선택 안 함</option>
-      <option value="male">남성</option>
-      <option value="female">여성</option>
-    </select>
-  </div>
+    <script>
+      function colorFor(n) {
+        if (n <= 10) return { bg: "#FAC775", fg: "#412402" };
+        if (n <= 20) return { bg: "#85B7EB", fg: "#042C53" };
+        if (n <= 30) return { bg: "#F0997B", fg: "#4A1B0C" };
+        if (n <= 40) return { bg: "#B4B2A9", fg: "#2C2C2A" };
+        return { bg: "#97C459", fg: "#173404" };
+      }
 
-  <button type="submit" id="saju-submit">
-    <i class="ti ti-wand" style="font-size:16px; vertical-align:-3px; margin-right:6px;" aria-hidden="true"></i>사주로 번호 추천받기
-  </button>
-</form>
+      // 최근 100회(1132회~1231회) 실제 당첨번호 기준, 번호 1~45의 본번호 출현 횟수
+      // 출처: smok95/lotto (https://smok95.github.io/lotto/results/all.json)
+      const RECENT_100_FREQUENCY = [
+        12, 10, 18, 12, 10, 15, 16, 15, 17, 10, 11, 14, 17, 9, 17, 17, 12, 11,
+        15, 12, 12, 10, 11, 14, 12, 13, 21, 19, 15, 14, 15, 11, 13, 11, 14, 12,
+        16, 17, 14, 11, 12, 13, 6, 12, 12,
+      ];
 
-<div id="saju-error" role="alert"></div>
+      // 출현 빈도가 높을수록 뽑힐 확률이 높아지도록 가중치 추첨 (완전 배제되는 번호가 없도록 +1 보정)
+      function weightedPick(excludeSet) {
+        const candidates = [];
+        let totalWeight = 0;
+        for (let n = 1; n <= 45; n++) {
+          if (excludeSet.has(n)) continue;
+          const weight = RECENT_100_FREQUENCY[n - 1] + 1;
+          totalWeight += weight;
+          candidates.push({ n, weight });
+        }
+        let r = Math.random() * totalWeight;
+        for (const c of candidates) {
+          r -= c.weight;
+          if (r <= 0) return c.n;
+        }
+        return candidates[candidates.length - 1].n;
+      }
 
-<div id="saju-result">
-  <div id="saju-result-balls"></div>
-  <p id="saju-result-message"></p>
-</div>
-</div>
+      function drawNumbers() {
+        const picked = new Set();
+        while (picked.size < 6) {
+          picked.add(weightedPick(picked));
+        }
+        const bonus = weightedPick(picked);
+        const main = [...picked].sort((a, b) => a - b);
+        return { main, bonus };
+      }
 
-</div>
+      function makeBall(size, isBonus) {
+        const ball = document.createElement("div");
+        ball.className = "lotto-ball" + (isBonus ? " bonus-ball" : "");
+        ball.style.setProperty("--ball-size", size + "px");
+        ball.style.fontSize = size * 0.42 + "px";
+        ball.textContent = "";
+        return ball;
+      }
 
-<script>
-function colorFor(n){
-  if(n<=10) return {bg:'#FAC775', fg:'#412402'};
-  if(n<=20) return {bg:'#85B7EB', fg:'#042C53'};
-  if(n<=30) return {bg:'#F0997B', fg:'#4A1B0C'};
-  if(n<=40) return {bg:'#B4B2A9', fg:'#2C2C2A'};
-  return {bg:'#97C459', fg:'#173404'};
-}
+      function makePlus() {
+        const plus = document.createElement("span");
+        plus.className = "lotto-plus";
+        plus.textContent = "+";
+        return plus;
+      }
 
-// 최근 100회(1132회~1231회) 실제 당첨번호 기준, 번호 1~45의 본번호 출현 횟수
-// 출처: smok95/lotto (https://smok95.github.io/lotto/results/all.json)
-const RECENT_100_FREQUENCY = [12,10,18,12,10,15,16,15,17,10,11,14,17,9,17,17,12,11,15,12,12,10,11,14,12,13,21,19,15,14,15,11,13,11,14,12,16,17,14,11,12,13,6,12,12];
-
-// 출현 빈도가 높을수록 뽑힐 확률이 높아지도록 가중치 추첨 (완전 배제되는 번호가 없도록 +1 보정)
-function weightedPick(excludeSet){
-  const candidates = [];
-  let totalWeight = 0;
-  for(let n = 1; n <= 45; n++){
-    if(excludeSet.has(n)) continue;
-    const weight = RECENT_100_FREQUENCY[n - 1] + 1;
-    totalWeight += weight;
-    candidates.push({n, weight});
-  }
-  let r = Math.random() * totalWeight;
-  for(const c of candidates){
-    r -= c.weight;
-    if(r <= 0) return c.n;
-  }
-  return candidates[candidates.length - 1].n;
-}
-
-function drawNumbers(){
-  const picked = new Set();
-  while(picked.size < 6){
-    picked.add(weightedPick(picked));
-  }
-  const bonus = weightedPick(picked);
-  const main = [...picked].sort((a,b)=>a-b);
-  return {main, bonus};
-}
-
-function makeBall(size, isBonus){
-  const ball = document.createElement('div');
-  ball.className = 'lotto-ball' + (isBonus ? ' bonus-ball' : '');
-  ball.style.setProperty('--ball-size', size + 'px');
-  ball.style.fontSize = (size * 0.42) + 'px';
-  ball.textContent = '';
-  return ball;
-}
-
-function makePlus(){
-  const plus = document.createElement('span');
-  plus.className = 'lotto-plus';
-  plus.textContent = '+';
-  return plus;
-}
-
-// static (non-animated) render, used for history rows and the AI recommendation result
-function renderBallRow(container, main, bonus, size){
-  container.innerHTML = '';
-  main.forEach(n=>{
-    const c = colorFor(n);
-    const ball = makeBall(size, false);
-    ball.textContent = n;
-    ball.style.background = c.bg;
-    ball.style.color = c.fg;
-    ball.classList.add('settled');
-    container.appendChild(ball);
-  });
-  container.appendChild(makePlus());
-  const c = colorFor(bonus);
-  const bonusBall = makeBall(size, true);
-  bonusBall.textContent = bonus;
-  bonusBall.style.background = c.bg;
-  bonusBall.style.color = c.fg;
-  bonusBall.classList.add('settled');
-  container.appendChild(bonusBall);
-}
-
-// animated "drum roll" render for the live draw
-function renderBallRowAnimated(container, main, bonus, size){
-  return new Promise(resolve=>{
-    container.innerHTML = '';
-    const allNums = [...main, bonus];
-    const balls = allNums.map((n, idx)=>{
-      if(idx === main.length) container.appendChild(makePlus());
-      const ball = makeBall(size, idx === main.length);
-      container.appendChild(ball);
-      return ball;
-    });
-
-    let i = 0;
-    function revealNext(){
-      if(i >= balls.length){ resolve(); return; }
-      const ball = balls[i];
-      const finalNum = allNums[i];
-      ball.classList.add('settled', 'rolling');
-
-      let ticks = 0;
-      const spin = setInterval(()=>{
-        ball.textContent = Math.floor(Math.random()*45)+1;
-        ticks++;
-        if(ticks > 7){
-          clearInterval(spin);
-          ball.classList.remove('rolling');
-          const c = colorFor(finalNum);
-          ball.textContent = finalNum;
+      // static (non-animated) render, used for history rows and the AI recommendation result
+      function renderBallRow(container, main, bonus, size) {
+        container.innerHTML = "";
+        main.forEach((n) => {
+          const c = colorFor(n);
+          const ball = makeBall(size, false);
+          ball.textContent = n;
           ball.style.background = c.bg;
           ball.style.color = c.fg;
-          i++;
-          setTimeout(revealNext, 120);
+          ball.classList.add("settled");
+          container.appendChild(ball);
+        });
+        container.appendChild(makePlus());
+        const c = colorFor(bonus);
+        const bonusBall = makeBall(size, true);
+        bonusBall.textContent = bonus;
+        bonusBall.style.background = c.bg;
+        bonusBall.style.color = c.fg;
+        bonusBall.classList.add("settled");
+        container.appendChild(bonusBall);
+      }
+
+      // animated "drum roll" render for the live draw
+      function renderBallRowAnimated(container, main, bonus, size) {
+        return new Promise((resolve) => {
+          container.innerHTML = "";
+          const allNums = [...main, bonus];
+          const balls = allNums.map((n, idx) => {
+            if (idx === main.length) container.appendChild(makePlus());
+            const ball = makeBall(size, idx === main.length);
+            container.appendChild(ball);
+            return ball;
+          });
+
+          let i = 0;
+          function revealNext() {
+            if (i >= balls.length) {
+              resolve();
+              return;
+            }
+            const ball = balls[i];
+            const finalNum = allNums[i];
+            ball.classList.add("settled", "rolling");
+
+            let ticks = 0;
+            const spin = setInterval(() => {
+              ball.textContent = Math.floor(Math.random() * 45) + 1;
+              ticks++;
+              if (ticks > 7) {
+                clearInterval(spin);
+                ball.classList.remove("rolling");
+                const c = colorFor(finalNum);
+                ball.textContent = finalNum;
+                ball.style.background = c.bg;
+                ball.style.color = c.fg;
+                i++;
+                setTimeout(revealNext, 120);
+              }
+            }, 55);
+          }
+          revealNext();
+        });
+      }
+
+      const ballsEl = document.getElementById("balls");
+      const historyEl = document.getElementById("history");
+      const drawBtn = document.getElementById("draw-btn");
+      const clearBtn = document.getElementById("clear-btn");
+      let history = [];
+
+      async function draw() {
+        drawBtn.disabled = true;
+        clearBtn.disabled = true;
+        drawBtn.classList.add("drawing");
+
+        const { main, bonus } = drawNumbers();
+        await renderBallRowAnimated(ballsEl, main, bonus, 44);
+        history.unshift({ main, bonus });
+        if (history.length > 8) history.pop();
+        renderHistory();
+
+        drawBtn.classList.remove("drawing");
+        drawBtn.disabled = false;
+        clearBtn.disabled = false;
+      }
+
+      function renderHistory() {
+        historyEl.innerHTML = "";
+        history.forEach((entry, i) => {
+          const row = document.createElement("div");
+          row.className = "history-row";
+          const label = document.createElement("span");
+          label.className = "history-label";
+          label.textContent = history.length - i + "회차";
+          const ballWrap = document.createElement("div");
+          ballWrap.className = "history-balls";
+          renderBallRow(ballWrap, entry.main, entry.bonus, 26);
+          row.appendChild(label);
+          row.appendChild(ballWrap);
+          historyEl.appendChild(row);
+        });
+      }
+
+      drawBtn.addEventListener("click", draw);
+      clearBtn.addEventListener("click", () => {
+        history = [];
+        ballsEl.innerHTML = "";
+        renderHistory();
+      });
+
+      draw();
+
+      // --- 사주 기반 AI 번호 추천 ---
+      const sajuForm = document.getElementById("saju-form");
+      const sajuSubmit = document.getElementById("saju-submit");
+      const sajuTimeInput = document.getElementById("saju-birthtime");
+      const sajuTimeUnknown = document.getElementById("saju-time-unknown");
+      const sajuError = document.getElementById("saju-error");
+      const sajuResult = document.getElementById("saju-result");
+      const sajuResultBalls = document.getElementById("saju-result-balls");
+      const sajuResultMessage = document.getElementById("saju-result-message");
+
+      sajuTimeUnknown.addEventListener("change", () => {
+        sajuTimeInput.disabled = sajuTimeUnknown.checked;
+        if (sajuTimeUnknown.checked) sajuTimeInput.value = "";
+      });
+
+      sajuForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        sajuError.classList.remove("visible");
+        sajuResult.classList.remove("visible");
+
+        const birthDate = document.getElementById("saju-birthdate").value;
+        const birthTime = sajuTimeUnknown.checked ? "" : sajuTimeInput.value;
+        const gender = document.getElementById("saju-gender").value;
+
+        if (!birthDate) {
+          sajuError.textContent = "생년월일을 입력해주세요.";
+          sajuError.classList.add("visible");
+          return;
         }
-      }, 55);
-    }
-    revealNext();
-  });
-}
 
-const ballsEl = document.getElementById('balls');
-const historyEl = document.getElementById('history');
-const drawBtn = document.getElementById('draw-btn');
-const clearBtn = document.getElementById('clear-btn');
-let history = [];
+        sajuSubmit.disabled = true;
+        sajuSubmit.innerHTML =
+          '<i class="ti ti-loader-2" style="font-size:16px; vertical-align:-3px; margin-right:6px;" aria-hidden="true"></i>사주 풀이 중...';
 
-async function draw(){
-  drawBtn.disabled = true;
-  clearBtn.disabled = true;
-  drawBtn.classList.add('drawing');
+        try {
+          const res = await fetch("/api/saju-lotto", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ birthDate, birthTime, gender }),
+          });
+          const data = await res.json();
 
-  const {main, bonus} = drawNumbers();
-  await renderBallRowAnimated(ballsEl, main, bonus, 44);
-  history.unshift({main, bonus});
-  if(history.length > 8) history.pop();
-  renderHistory();
+          if (!res.ok) {
+            throw new Error(data.error || "번호를 추천받지 못했습니다.");
+          }
 
-  drawBtn.classList.remove('drawing');
-  drawBtn.disabled = false;
-  clearBtn.disabled = false;
-}
-
-function renderHistory(){
-  historyEl.innerHTML = '';
-  history.forEach((entry, i)=>{
-    const row = document.createElement('div');
-    row.className = 'history-row';
-    const label = document.createElement('span');
-    label.className = 'history-label';
-    label.textContent = (history.length - i) + '회차';
-    const ballWrap = document.createElement('div');
-    ballWrap.className = 'history-balls';
-    renderBallRow(ballWrap, entry.main, entry.bonus, 26);
-    row.appendChild(label);
-    row.appendChild(ballWrap);
-    historyEl.appendChild(row);
-  });
-}
-
-drawBtn.addEventListener('click', draw);
-clearBtn.addEventListener('click', ()=>{
-  history = [];
-  ballsEl.innerHTML = '';
-  renderHistory();
-});
-
-draw();
-
-// --- 사주 기반 AI 번호 추천 ---
-const sajuForm = document.getElementById('saju-form');
-const sajuSubmit = document.getElementById('saju-submit');
-const sajuTimeInput = document.getElementById('saju-birthtime');
-const sajuTimeUnknown = document.getElementById('saju-time-unknown');
-const sajuError = document.getElementById('saju-error');
-const sajuResult = document.getElementById('saju-result');
-const sajuResultBalls = document.getElementById('saju-result-balls');
-const sajuResultMessage = document.getElementById('saju-result-message');
-
-sajuTimeUnknown.addEventListener('change', ()=>{
-  sajuTimeInput.disabled = sajuTimeUnknown.checked;
-  if(sajuTimeUnknown.checked) sajuTimeInput.value = '';
-});
-
-sajuForm.addEventListener('submit', async (e)=>{
-  e.preventDefault();
-
-  sajuError.classList.remove('visible');
-  sajuResult.classList.remove('visible');
-
-  const birthDate = document.getElementById('saju-birthdate').value;
-  const birthTime = sajuTimeUnknown.checked ? '' : sajuTimeInput.value;
-  const gender = document.getElementById('saju-gender').value;
-
-  if(!birthDate){
-    sajuError.textContent = '생년월일을 입력해주세요.';
-    sajuError.classList.add('visible');
-    return;
-  }
-
-  sajuSubmit.disabled = true;
-  sajuSubmit.innerHTML = '<i class="ti ti-loader-2" style="font-size:16px; vertical-align:-3px; margin-right:6px;" aria-hidden="true"></i>사주 풀이 중...';
-
-  try {
-    const res = await fetch('/api/saju-lotto', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ birthDate, birthTime, gender })
-    });
-    const data = await res.json();
-
-    if(!res.ok){
-      throw new Error(data.error || '번호를 추천받지 못했습니다.');
-    }
-
-    renderBallRow(sajuResultBalls, data.main, data.bonus, 40);
-    sajuResultMessage.textContent = data.message || '';
-    sajuResult.classList.add('visible');
-  } catch (err) {
-    sajuError.textContent = err.message || '오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
-    sajuError.classList.add('visible');
-  } finally {
-    sajuSubmit.disabled = false;
-    sajuSubmit.innerHTML = '<i class="ti ti-wand" style="font-size:16px; vertical-align:-3px; margin-right:6px;" aria-hidden="true"></i>사주로 번호 추천받기';
-  }
-});
-</script>
-</body>
+          renderBallRow(sajuResultBalls, data.main, data.bonus, 40);
+          sajuResultMessage.textContent = data.message || "";
+          sajuResult.classList.add("visible");
+        } catch (err) {
+          sajuError.textContent =
+            err.message || "오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
+          sajuError.classList.add("visible");
+        } finally {
+          sajuSubmit.disabled = false;
+          sajuSubmit.innerHTML =
+            '<i class="ti ti-wand" style="font-size:16px; vertical-align:-3px; margin-right:6px;" aria-hidden="true"></i>사주로 번호 추천받기';
+        }
+      });
+    </script>
+  </body>
 </html>
